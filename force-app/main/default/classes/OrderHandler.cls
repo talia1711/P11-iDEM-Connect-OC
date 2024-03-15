@@ -3,7 +3,7 @@ public with sharing class OrderHandler {
         OrderService.checkRelatedAccount(newOrders);
     }
 
-    public static void beforeDelete(List<Order> deletedOrder) {
+    public static void afterDelete(List<Order> deletedOrder) {
         OrderService.checkRelatedAccount(deletedOrder);
     }
 }
