@@ -1,6 +1,12 @@
+/***
+ * Author: Talia Ajaz
+ * Date: March 2024
+ * Test class for AccountOrderReminderBatch
+ */
 @isTest
 public class AccountOrderReminderBatchTest {
   
+    //test that no tasks are created for account that has at least one order
     @isTest
     static void notTasksForAccountsWithOrders(){
          //create 200 accounts
@@ -42,14 +48,16 @@ public class AccountOrderReminderBatchTest {
 		
 		insert orderItemList;
 
-
+        //execute test
         Test.startTest();
             AccountOrderReminderBatch ba = new AccountOrderReminderBatch();
             Id jobid= Database.executeBatch(ba, 200);
         Test.stopTest();
+         //assert result
         Assert.areEqual(0, [SELECT Id FROm Task].size(),'No tasks should be created for accounts with order');
     }
 
+    //test that tasks are created for account that dont have an order
     @isTest
     static void cresteTasksForAccountsWithOrders() {
         //create 200 accounts
@@ -58,10 +66,14 @@ public class AccountOrderReminderBatchTest {
             accList.add(new Account(Name = 'OC'+i));
         }
         insert accList;
+
+        //execute test
         Test.startTest();
             AccountOrderReminderBatch ba = new AccountOrderReminderBatch();
             Id jobid= Database.executeBatch(ba, 200);
         Test.stopTest();
+
+        //assert result
         Assert.areEqual(200, [SELECT Id FROm Task].size(),'Tasks should be created for accounts without orders');
     }
 }

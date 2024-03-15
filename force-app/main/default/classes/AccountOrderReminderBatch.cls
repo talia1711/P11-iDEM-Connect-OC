@@ -1,3 +1,7 @@
+/***
+ * Author: Talia Ajaz
+ * Date: March 2024
+ */
 global class AccountOrderReminderBatch implements Database.Batchable<sObject>, Schedulable {
     public void execute(SchedulableContext sc) {
         // Initiate the batch process when the scheduled job executes.
@@ -9,12 +13,15 @@ global class AccountOrderReminderBatch implements Database.Batchable<sObject>, S
         System.schedule('Weekly AccountOrderReminderBatch',  '0 0 6 ? * MON', new AccountOrderReminderBatch());
     }
     
+    //query all acouunts without orders
    global Database.QueryLocator start(Database.BatchableContext info){ 
 	    return Database.getQueryLocator('SELECT Id, Name, OwnerId FROM Account WHERE Id NOT IN (SELECT AccountId FROM Order)');
    }
     
    global void execute(Database.BatchableContext info, List<Account> listAccounts){   
         List<Task> tasksToBeAdded = new  List<Task>();
+
+        //for each account, create a task record
         for(Account acc : listAccounts){
             tasksToBeAdded.add(new Task(
                 WhatId = acc.Id,
@@ -26,7 +33,7 @@ global class AccountOrderReminderBatch implements Database.Batchable<sObject>, S
         }
 
         insert tasksToBeAdded;
-   }    
+   }
     
    global void finish(Database.BatchableContext info){     
        

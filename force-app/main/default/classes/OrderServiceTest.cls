@@ -1,6 +1,12 @@
+/***
+ * Author: Talia Ajaz
+ * Date: March 2024
+ * Test class for OrderService, Order Trigger
+ */
 @isTest
 public class OrderServiceTest {
    
+    //to setup data used in test methods
     @testSetup
     static void setupData(){
         //create 200 accounts
@@ -37,21 +43,23 @@ public class OrderServiceTest {
 
     @isTest
     static void checkRelatedAccountWithOrdersTest(){
-
+     //prepare data
        Order orderItem = [SELECT Id, AccountId, Name FROM Order LIMIT 1];
-
+        
+       //execute test
        Test.startTest();
            orderItem.Name = 'Item2';
            update orderItem;
        Test.stopTest();
 
+       //assert result
        Account acc = [SELECT Id, Active__c FROM Account WHERE Id = :orderItem.AccountId LIMIT 1];
        Assert.isTrue(acc.Active__c, 'The account active field should be checked');
     }   
     
     @isTest
     static void checkRelatedAccountWithOrdersBulkTest(){
-   	//prepare data
+   	 //prepare data
        Set<Id> accountIds = new Set<Id>();
        List<Order> orderList = [SELECT Id, AccountId, Name FROM Order];
  	   for(Order order: orderList){
@@ -59,10 +67,12 @@ public class OrderServiceTest {
             accountIds.add(order.AccountId);
        }
         
+       //execute test
        Test.startTest();
            update orderList;
        Test.stopTest();
        
+       //assert result
         for(Account acc : [SELECT Id, Active__c FROM Account WHERE Id IN :accountIds]){
             Assert.isTrue(acc.Active__c, 'The account active field should be checked');
         }
@@ -71,20 +81,24 @@ public class OrderServiceTest {
 
     @isTest
     static void checkRelatedAccountWithoutOrdersTest(){
+        //prepare data
         insert new Account(Name = 'AccWithoutOrder');
         Order orderItem = [SELECT Id, Name FROM Order LIMIT 1];
 
+        //execute test
        Test.startTest();
            orderItem.Name = 'Item2';
            update orderItem;
        Test.stopTest();
 
+       //assert result
        Account acc = [SELECT Id, Active__c FROM Account WHERE Name = 'AccWithoutOrder' LIMIT 1];
        Assert.isFalse(acc.Active__c, 'The account active field should be unchedcked');
     }
     
      @isTest
     static void checkRelatedAccountWithoutOrdersBulkTest(){
+        //prepare data
         List<Account> accList = new List<Account>();
          for(Integer i=0;i<200;i++){
             accList.add(new Account(Name = 'AccWithoutOrder'+i));
@@ -97,10 +111,12 @@ public class OrderServiceTest {
             order.Name = 'Item2';
        }
 
+       //execute test
        Test.startTest();
            update orderList;
        Test.stopTest();
         
+       //assert result
        for(Account acc : [SELECT Id, Active__c FROM Account WHERE Name = 'AccWithoutOrder%']){
             Assert.isTrue(acc.Active__c, 'The account active field should be checked');
         }
@@ -108,13 +124,18 @@ public class OrderServiceTest {
 
     @isTest
     static void checkRelatedAccountWithDeletedOrdersTest(){
+        //prepare data
         Order orderItem = [SELECT Id, AccountId, Name FROM Order LIMIT 1];
         Account acc = [SELECT Id, Active__c FROM Account WHERE Id = :orderItem.AccountId LIMIT 1];
         acc.Active__c = true;
+
+        //execute test
         update acc;
         Test.startTest();
             delete orderItem;
         Test.stopTest();
+
+        //assert result
         Account accWithNoOrder = [SELECT Id, Active__c FROM Account WHERE Id = :acc.Id LIMIT 1];
         Assert.isFalse(accWithNoOrder.Active__c, 'The account active field should be unchecked');
 
@@ -122,6 +143,7 @@ public class OrderServiceTest {
     
     @isTest
     static void checkRelatedAccountWithDeletedOrdersBulkTest(){
+        //prepare data
         Set<Id> accountIds = new Set<Id>();
         List<Order> orderList = [SELECT Id, AccountId, Name FROM Order];
         
@@ -137,10 +159,12 @@ public class OrderServiceTest {
  
         update accList;
         
+        //execute test
         Test.startTest();
             delete orderList;
         Test.stopTest();
         
+        //assert result
         for(Account accWithNoOrder : [SELECT Id, Active__c FROM Account WHERE Id IN :accountIds]){
             Assert.isFalse(accWithNoOrder.Active__c, 'The account active field should be unchecked');
         }
